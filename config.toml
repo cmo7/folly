@@ -1,0 +1,33 @@
+[general]
+[general.app]
+name = "app3"
+port = 3000
+
+
+
+[database]
+driver = "postgres"
+host= "localhost"
+username = "postgres"
+password = "postgres"
+name = "postgres"
+port = 5432
+[database.sqlite]
+file = "db.sqlite3"
+
+
+[log]
+level = "debug"
+database = "debug"
+
+[services]
+[services.pagination]
+[services.pagination.size]
+max = 100
+default = 10
+
+[jwt]
+issuer = "app"
+exp = 3600
+max_age = 86400
+secret = "secret"
