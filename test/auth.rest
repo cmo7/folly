@@ -25,10 +25,10 @@ Content-Type: application/json
 GET http://localhost:3000/api/v1/info HTTP/1.1
 
 ###
-GET http://localhost:3000/api/v1/roles?relations=users HTTP/1.1
+GET http://localhost:3000/api/v1/roles?relations=users,users.posts HTTP/1.1
 
 ###
-GET http://localhost:3000/api/v1/users?relations=roles&page=11 HTTP/1.1
+GET http://localhost:3000/api/v1/users?relations=roles HTTP/1.1
 
 
 ###
@@ -55,10 +55,7 @@ Content-Type: application/json
     "email": "asdaasasdfasdff@aasasdfur.com",
     "roles": [
         {
-            "id": "4e025432-2772-4692-bb49-bd8a6da27a7d"
-        },
-        {
-            "id": "b9146b4d-2f25-4986-ba46-6d6fdac39116"
+            "id": "7812c052-3a51-44d4-8de8-9fcb50d05605"
         }
     ]
 }
@@ -85,3 +82,6 @@ Content-Type: application/json
         }
     ]
 }
+
+###
+GET http://localhost:3000/api/v1/posts HTTP/1.1

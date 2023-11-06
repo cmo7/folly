@@ -1,7 +1,7 @@
 package main
 
 import (
-	"folly/src/cli/cmd"
+	"folly/src/cmd"
 )
 
 func main() {

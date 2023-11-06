@@ -33,7 +33,7 @@ type PostDTO struct {
 func (p Post) ToDto() common.DTO {
 	author := p.Author.ToDto().(*UserDTO)
 
-	return &PostDTO{
+	result := &PostDTO{
 		CommonDTO: common.CommonDTO{
 			ID:        p.ID,
 			CreatedAt: p.CreatedAt,
@@ -41,8 +41,13 @@ func (p Post) ToDto() common.DTO {
 		},
 		Title:   p.Title,
 		Content: p.Content,
-		Author:  *author,
 	}
+
+	if author.ID != uuid.Nil {
+		result.Author = *author
+	}
+
+	return result
 }
 
 func (p PostDTO) ToEntity() common.Entity {

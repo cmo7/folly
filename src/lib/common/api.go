@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"folly/src/lib/helpers"
 	"strconv"
 	"strings"
@@ -89,7 +88,13 @@ func RelationsFromQuery(c *fiber.Ctx) []string {
 	}
 	relationList := strings.Split(relations, ",")
 	for i, relation := range relationList {
-		relationList[i] = strcase.ToCamel(relation)
+		path := strings.Split(relation, ".")
+		for j, part := range path {
+			path[j] = strcase.ToCamel(part)
+		}
+		relation = strings.Join(path, ".")
+
+		relationList[i] = relation
 	}
 	return relationList
 }
@@ -99,7 +104,6 @@ func ConditionsFromQuery(c *fiber.Ctx) SQLConditions {
 	if filters == "" {
 		return SQLConditions{}
 	}
-	fmt.Printf("filters: %s\n", filters)
 	filterList := strings.Split(filters, ",")
 
 	var conditions []SQLCondition
@@ -116,7 +120,6 @@ func ConditionsFromQuery(c *fiber.Ctx) SQLConditions {
 		case "ilike":
 			condition.Comparator = ILike
 		}
-		fmt.Printf("condition: %v\n", helpers.PrettyStruct(condition))
 		conditions = append(conditions, condition)
 	}
 	return conditions

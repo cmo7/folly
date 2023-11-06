@@ -3,7 +3,6 @@ package generics
 import (
 	"fmt"
 	"folly/src/lib/common"
-	"folly/src/lib/helpers"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -126,12 +125,10 @@ func (imp GenericControllerImpl[E, DTO]) Create() fiber.Handler {
 		}
 
 		entity := dto.ToEntity().(E)
-		fmt.Printf("---\n%v\n---", helpers.PrettyStruct(entity))
 		entity, err := imp.repository.Create(entity)
 		if err != nil {
 			return BadRequest(c, err, fmt.Sprintf("Invalid %s payload", imp.names.Singular))
 		}
-		fmt.Printf("---\n%v\n---", helpers.PrettyStruct(entity))
 
 		return Created(c, entity.ToDto(), fmt.Sprintf("%s created", imp.names.Singular))
 	}

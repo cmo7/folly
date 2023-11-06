@@ -15,7 +15,11 @@ var dropCmd = &cobra.Command{
 	Short: "Drops the database",
 	Long:  `Drops the database.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		database.Connect()
-		database.Drop()
+		if _, err := database.Connect(); err != nil {
+			panic(err)
+		}
+		if err := database.Drop(); err != nil {
+			panic(err)
+		}
 	},
 }
