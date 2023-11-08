@@ -2,6 +2,14 @@ package database
 
 import "folly/src/lib/common"
 
+type OnFlush string // "DROP" | "TRUNCATE" | "NO ACTION"
+
+const (
+	DROP     OnFlush = "DROP"
+	TRUNCATE OnFlush = "TRUNCATE"
+	NOACTION OnFlush = "NO ACTION"
+)
+
 type MigrationTask struct {
 	Model           common.Entity
 	DropOnFlush     bool

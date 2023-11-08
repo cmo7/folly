@@ -11,6 +11,7 @@ import (
 // Embedded struct that contains common fields for all entities
 // Must be embedded in all entities
 // Must use gorm:"embedded" tag
+// For example: type User struct { common.CommonEntity `gorm:"embedded"` }
 type CommonEntity struct {
 	ID        uuid.UUID `gorm:"primaryKey;type:uuid"`
 	CreatedAt time.Time
@@ -21,10 +22,11 @@ type CommonEntity struct {
 // Embedded struct that contains common fields for all DTOs
 // Must be embedded in all DTOs
 // Must use json:",inline,omitempty" tag
+// For example: type UserDTO struct { common.CommonDTO `json:",inline,omitempty"` }
 type CommonDTO struct {
 	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (e *CommonEntity) BeforeCreate(tx *gorm.DB) error {

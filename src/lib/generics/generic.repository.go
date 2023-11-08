@@ -14,9 +14,10 @@ type Repository[Entity common.Entity, DTO common.DTO] interface {
 	Update(payload Entity) (Entity, error)
 	Delete(payload Entity) error
 	FindOne(id uuid.UUID, conditions common.SQLConditions, relations []string) (Entity, error)
-	FindAll(pageable common.Pageable, conditions common.SQLConditions, relations []string) (*common.Page[Entity], error)
+	FindAll(pageable common.Pageable, conditions common.SQLConditions, relations []string, orderBys common.OrderBys) (*common.Page[Entity], error)
 	FindOneRandom() (Entity, error)
 	Exists(id uuid.UUID) (bool, error)
+	Count(conditions common.SQLConditions) (int64, error)
 }
 
 type GenericRepository[Entity common.Entity, DTO common.DTO] struct{}
@@ -59,7 +60,7 @@ func (imp GenericRepository[Entity, DTO]) FindOneRandom() (Entity, error) {
 	return entity, err
 }
 
-func (imp GenericRepository[Entity, DTO]) FindAll(pageable common.Pageable, conditions common.SQLConditions, relations []string) (*common.Page[Entity], error) {
+func (imp GenericRepository[Entity, DTO]) FindAll(pageable common.Pageable, conditions common.SQLConditions, relations []string, orderBys common.OrderBys) (*common.Page[Entity], error) {
 	var entities []Entity
 	limit := pageable.Size
 	offset := (pageable.Page - 1) * pageable.Size
@@ -69,7 +70,11 @@ func (imp GenericRepository[Entity, DTO]) FindAll(pageable common.Pageable, cond
 	result := database.DB.
 		Limit(limit).
 		Offset(offset).
-		Scopes(Preload(relations), Filter(conditions)).
+		Scopes(
+			Preload(relations),
+			Filter(conditions),
+			Order(orderBys),
+		).
 		Find(&entities)
 	var filtered int64
 	database.DB.Model(&entities).
@@ -94,14 +99,36 @@ func (imp GenericRepository[Entity, DTO]) Exists(id uuid.UUID) (bool, error) {
 	return true, nil
 }
 
+func (imp GenericRepository[Entity, DTO]) Count(conditions common.SQLConditions) (int64, error) {
+	var count int64
+	var entity Entity
+	err := database.DB.
+		Model(entity).
+		Scopes(Filter(conditions)).
+		Count(&count).Error
+	return count, err
+}
+
 func Filter(conditions common.SQLConditions) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		for _, condition := range conditions {
-			switch condition.Comparator {
-			case common.Like:
-				db = db.Where(condition.Field+" LIKE ?", "%"+condition.Value+"%")
-			case common.Equal:
-				db = db.Where(condition.Field+" = ?", condition.Value)
+			if condition.Type == common.Or {
+				db = db.Or(condition.Field+" "+string(condition.Comparator)+" ?", condition.Value)
+				continue
+			}
+			db = db.Where(condition.Field+" "+string(condition.Comparator)+" ?", condition.Value)
+		}
+		return db
+	}
+}
+
+func Order(orderBys common.OrderBys) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		for _, orderBy := range orderBys {
+			if orderBy.Direction == common.Asc {
+				db = db.Order(orderBy.Field + " asc")
+			} else {
+				db = db.Order(orderBy.Field + " desc")
 			}
 		}
 		return db

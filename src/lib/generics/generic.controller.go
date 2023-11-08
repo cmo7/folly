@@ -62,10 +62,10 @@ func (imp GenericControllerImpl[E, DTO]) GetAll() fiber.Handler {
 		}
 
 		relations := common.RelationsFromQuery(c)
-
 		conditions := common.ConditionsFromQuery(c)
+		orders := common.OrderBysFromQuery(c)
 
-		result, err := imp.repository.FindAll(pageable, conditions, relations)
+		result, err := imp.repository.FindAll(pageable, conditions, relations, orders)
 		if err != nil {
 			return NotFound(c, err, fmt.Sprintf("%s not found", imp.names.Plural))
 		}

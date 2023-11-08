@@ -25,13 +25,16 @@ type Post struct {
 
 type PostDTO struct {
 	common.CommonDTO `json:",inline,omitempty"`
-	Title            string  `json:"title"`
-	Content          string  `json:"content"`
-	Author           UserDTO `json:"author,omitempty"`
+	Title            string   `json:"title"`
+	Content          string   `json:"content"`
+	Author           *UserDTO `json:"author,omitempty"`
 }
 
 func (p Post) ToDto() common.DTO {
-	author := p.Author.ToDto().(*UserDTO)
+	var author UserDTO
+	if p.AuthorID != uuid.Nil {
+		author = *p.Author.ToDto().(*UserDTO)
+	}
 
 	result := &PostDTO{
 		CommonDTO: common.CommonDTO{
@@ -44,7 +47,7 @@ func (p Post) ToDto() common.DTO {
 	}
 
 	if author.ID != uuid.Nil {
-		result.Author = *author
+		result.Author = &author
 	}
 
 	return result

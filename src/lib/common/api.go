@@ -66,6 +66,41 @@ func NewValidationErrorResponse(errors []*helpers.ValidationErrors, message stri
 	}
 }
 
+func OrderBysFromQuery(c *fiber.Ctx) OrderBys {
+	orders := c.Query("orders", "")
+	if orders == "" {
+		return OrderBys{}
+	}
+	orderList := strings.Split(orders, ",")
+
+	var orderBys OrderBys
+	for _, order := range orderList {
+		orderSplit := strings.Split(order, ":")
+		orderBy := OrderBy{}
+		var field, direction string
+		if len(orderSplit) == 1 {
+			field = orderSplit[0]
+			direction = "asc"
+		} else if len(orderSplit) == 2 {
+			field = orderSplit[0]
+			direction = orderSplit[1]
+		} else {
+			continue
+		}
+		orderBy.Field = strcase.ToSnake(field)
+		switch direction {
+		case "asc":
+			orderBy.Direction = Asc
+		case "desc":
+			orderBy.Direction = Desc
+		default:
+			orderBy.Direction = Asc
+		}
+		orderBys = append(orderBys, orderBy)
+	}
+	return orderBys
+}
+
 func PageableFromQuery(c *fiber.Ctx) (Pageable, error) {
 	page, err := strconv.Atoi(c.Query("page", "0"))
 	if err != nil {
@@ -110,16 +145,41 @@ func ConditionsFromQuery(c *fiber.Ctx) SQLConditions {
 	for _, filter := range filterList {
 		filterSplit := strings.Split(filter, ":")
 		condition := SQLCondition{}
-		condition.Field = strcase.ToSnake(filterSplit[0])
-		condition.Value = filterSplit[2]
-		switch filterSplit[1] {
+		var field, value, operator, conditionType string
+		if len(filterSplit) == 3 {
+			field = filterSplit[0]
+			operator = filterSplit[1]
+			value = filterSplit[2]
+			conditionType = "or"
+		} else if len(filterSplit) == 4 {
+			conditionType = filterSplit[0]
+			field = filterSplit[1]
+			operator = filterSplit[2]
+			value = filterSplit[3]
+		} else {
+			continue
+		}
+		condition.Field = strcase.ToSnake(field)
+		condition.Value = value
+		switch operator {
 		case "like":
 			condition.Comparator = Like
-		case "eq":
-			condition.Comparator = Equal
 		case "ilike":
 			condition.Comparator = ILike
+		case "gt":
+			condition.Comparator = GreaterThan
+		case "lt":
+			condition.Comparator = LessThan
+		case "gte":
+			condition.Comparator = GreaterEqualThan
+		case "lte":
+			condition.Comparator = LessEqualThan
+		case "in":
+			condition.Comparator = In
+		default:
+			condition.Comparator = Equal
 		}
+		condition.Type = SQLConditionType(conditionType)
 		conditions = append(conditions, condition)
 	}
 	return conditions
