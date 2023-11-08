@@ -1,6 +1,6 @@
 [general]
 [general.app]
-name = "app3"
+name = "Folly Dev App"
 port = 3000
 
 
