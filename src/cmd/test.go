@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
+	"folly/src/lib/generators"
+	"os"
 
-	"github.com/iancoleman/strcase"
 	"github.com/spf13/cobra"
 )
 
@@ -16,10 +16,11 @@ var testCmd = &cobra.Command{
 	Short: "Runs the tests",
 	Long:  `Runs the tests.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fields := []string{"first-name", "first_name", "UpdatedAt", "DeletedAt"}
-		for _, field := range fields {
-			fmt.Println(field, "=>", strcase.ToCamel(field))
-			fmt.Println(field, "=>", strcase.ToKebab(field))
-		}
+		contents := generators.GenerateModel("Aguacate")
+
+		println(contents)
+
+		os.WriteFile("src/app/models/test.go", []byte(contents), 0644)
+
 	},
 }
